@@ -81,15 +81,15 @@ $(document).ready(function() {
         var ctx = canvas[0].getContext('2d');
         mapCenter = degrees2meters(mapCenter.x, mapCenter.y);
 
-        canvas.on('click', function(e) {
+        $('.zoom_in').on('click', function(e) {
             zoomLevel++;
-            mapCenter = toCoordinate({x: e.pageX, y: e.pageY});
+            // mapCenter = toCoordinate({x: e.pageX, y: e.pageY});
             draw(ctx, mapCenter);
         });
 
-        canvas.on('contextmenu', function(e) {
+        $('.zoom_out').on('click', function(e) {
             zoomLevel--;
-            mapCenter = toCoordinate({x: e.pageX, y: e.pageY});
+            // mapCenter = toCoordinate({x: e.pageX, y: e.pageY});
             draw(ctx, mapCenter);
         });
 
@@ -146,6 +146,7 @@ function draw(ctx, mapCenter) {
     // console.log(maxY);
 
     // ctx.fillStyle = "rgb(200,0,0)";
+    var totalPixels = 0, tt = 0;
     for (var i = 0, l = dataset.features.length; i < l; i++) {
     	console.log(i);
         feature = dataset.features[i];
@@ -159,9 +160,11 @@ function draw(ctx, mapCenter) {
         var colorIndex = feature.properties[thematicAttribute] / thematicOffset + 1;
         var color = colorRamp[Math.floor(colorIndex)];
         var polygon, coord, pixel;
+        var lastPixel;
         for (var j = 0, ll = feature.geometry.coordinates[0].length; j < ll; j++) {
             polygon = feature.geometry.coordinates[0][j];
             ctx.fillStyle = color;
+            lastPixel = null;
             ctx.beginPath();
             for (var k = 0, lll = polygon.length; k < lll; k++) {
                 coord = polygon[k];
@@ -172,6 +175,19 @@ function draw(ctx, mapCenter) {
                     x: coord.x,
                     y: coord.y
                 }, minX, maxY);
+
+                totalPixels++;
+
+                if (!lastPixel) {
+                	lastPixel = pixel;
+                } else {
+                	if (pixel.x == lastPixel.x && pixel.y == lastPixel.y && k != lll - 1) {
+                		tt++;
+                		continue;
+                	} else {
+                		lastPixel = pixel;
+                	}
+                }
 
                 // console.log(pixel.x + ',' + pixel.y);
 
@@ -187,6 +203,9 @@ function draw(ctx, mapCenter) {
             }
         }
     }
+
+    console.log(totalPixels);
+    console.log(tt);
 };
 
 function empty(ctx) {
