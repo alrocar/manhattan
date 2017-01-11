@@ -65,6 +65,7 @@ function degrees2meters(lon, lat) {
 };
 
 var /*dataset,*/ mapWidth, mapHeight;
+var lastPanPosition, panOrigin;
 
 $(document).ready(function() {
     calculateResolutions(MAX_ZOOM_LEVEL);
@@ -77,6 +78,11 @@ $(document).ready(function() {
 
         mapWidth = canvas.width();
         mapHeight = canvas.height();
+
+        lastPanPosition = {
+        	x: mapWidth / 2,
+        	y: mapHeight / 2
+        };
 
         var ctx = canvas[0].getContext('2d');
         mapCenter = degrees2meters(mapCenter.x, mapCenter.y);
@@ -94,14 +100,63 @@ $(document).ready(function() {
         });
 
         canvas.on("mousedown", function(e) {
+        	panOrigin = {
+        		x: e.pageX,
+        		y: e.pageY
+        	};
+
+        	lastPanPosition = {
+            	x: e.pageX,
+            	y: e.pageY
+            };
+
             canvas.on("mousemove", function(e) {
                 // console.log(e.pageY + ',' + e.pageX);
                 // var newMapCenter = toCoordinate({x: e.pageX, y: e.pageY});
                 // draw(ctx, newMapCenter);
+                var translateTo = {
+	            	x: e.pageX - lastPanPosition.x,
+	            	y: e.pageY - lastPanPosition.y
+	            };
+
+	            lastPanPosition = {
+	            	x: e.pageX,
+	            	y: e.pageY
+	            };
+
+	            var imgData=ctx.getImageData(0,0,mapWidth,mapHeight);
+	            empty(ctx);
+				ctx.putImageData(imgData,translateTo.x,translateTo.y);
             });
         }).on("mouseup", function(e) {
             // mapCenter = toCoordinate({x: e.pageX, y: e.pageY});
             // draw(ctx, mapCenter);
+            canvas.off("mousemove");
+
+            var translateTo = {
+            	x: e.pageX - lastPanPosition.x,
+            	y: e.pageY - lastPanPosition.y
+            };
+
+            lastPanPosition = {
+            	x: e.pageX,
+            	y: e.pageY
+            };
+
+            var imgData=ctx.getImageData(0,0,mapWidth,mapHeight);
+            empty(ctx);
+			ctx.putImageData(imgData,translateTo.x,translateTo.y);
+
+			var newCenterPx = (mapWidth / 2) - (lastPanPosition.x - panOrigin.x);
+			var newCenterPy = (mapHeight / 2) - (lastPanPosition.y - panOrigin.y);
+			// mapCenter.x -= (lastPanPosition.x - panOrigin.x) * getResolution();
+			// mapCenter.y -= (lastPanPosition.y - panOrigin.y) * getResolution();
+			mapCenter = toCoordinate({
+				x: newCenterPx,
+				y: newCenterPy
+			});
+
+			draw(ctx, mapCenter);
         });
 
         prepare(dataset);
