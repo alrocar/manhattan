@@ -18,6 +18,25 @@ var thematicLevels = 7;
 var thematicOffset;
 var colorRamp = ['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0', '#225EA8', '#0C2C84'];
 
+function preprocess(features) {
+	var feature, polygon, minX, minY, maxX, maxY, coord;
+	for (var i = 0, l = features.length; i<l; i++) {
+		minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+		feature = features[i];
+		for (var j = 0, ll = feature.geometry.coordinates[0].length; j < ll; j++) {
+            polygon = feature.geometry.coordinates[0][j];
+            for (var k = 0, lll = polygon.length; k < lll; k++) {
+            	coord = polygon[k];
+            	minX = Math.min(coord[0], minX);
+            	minY = Math.min(coord[1], minY);
+            	maxX = Math.max(coord[0], maxX);
+            	maxY = Math.max(coord[1], maxY);
+            }
+            feature.bbox = [minX, minY, maxX, maxY];
+        }
+	}
+};
+
 function calculateResolutions(zoomLevels) {
     // var maxResolution = 20037508 * 2 / 256,
     var maxResolution = 180 * 2 / 256,
@@ -31,6 +50,15 @@ function calculateResolutions(zoomLevels) {
 
         resolutions[i] = resolution;
     }
+};
+
+function getViewportBounds() {
+	var minX = mapCenter.x - (mapWidth * getResolution());
+	var maxX = mapCenter.x + (mapWidth * getResolution());
+	var minY = mapCenter.y - (mapHeight * getResolution());
+	var maxY = mapCenter.y + (mapHeight * getResolution());
+
+	return [minX, minY, maxX, maxY];
 };
 
 function getResolution() {
@@ -71,6 +99,8 @@ var lastPanPosition, panOrigin;
 
 $(document).ready(function() {
     calculateResolutions(MAX_ZOOM_LEVEL);
+
+    preprocess(dataset.features);
 
 
     // $.getJSON(dataUrl, function(data) {
@@ -203,11 +233,19 @@ function draw(ctx, mapCenter) {
     // console.log(maxX);
     // console.log(minY);
     // console.log(maxY);
-    var totalPixels = 0, tt = 0;
+    var totalPixels = 0, tt = 0, totalFeatures = 0;
    	var t1 = new Date().getTime();
+
+   	var viewPortBounds = getViewportBounds();
     for (var i = 0, l = dataset.features.length; i < l; i++) {
     	// console.log(i);
         feature = dataset.features[i];
+
+        if (!intersects(viewPortBounds, feature.bbox)) {
+        	continue;
+        }
+
+        totalFeatures++;
 
         var colorIndex = feature.properties[thematicAttribute] / thematicOffset + 1;
         var color = colorRamp[Math.floor(colorIndex)];
@@ -273,11 +311,44 @@ function draw(ctx, mapCenter) {
     // ctx.putImageData(bufferCtx.getImageData(0,0,mapWidth,mapHeight), 0, 0);
 	console.log('canvas ' + (new Date().getTime() - t1));
 
-    console.log(totalPixels);
-    console.log(tt);
+    console.log('totalPixels: ' + totalPixels);
+    console.log('simplifications: ' + tt);
+    console.log('totalFeatures: ' + totalFeatures);
 };
 
 function empty(ctx) {
 	pxs = {};
     ctx.clearRect(0, 0, mapWidth, mapHeight);
 }
+
+function contains(bbox1, bbox2) {
+	var minX = bbox1[0], minY = bbox1[1], maxX = bbox1[2], maxY = bbox1[3];
+    var _minX = bbox2[0], _minY = bbox2[1], _maxX = bbox2[2], _maxY = bbox2[3];
+
+	var inLeft = (_minX >= minX)
+			&& (_minX <= maxX);
+	var inTop = (_maxY >= minY)
+			&& (_maxY <= maxY);
+	var inRight = (_maxX >= minX)
+			&& (_maxX <= maxX);
+	var inBottom = (_minY >= minY)
+			&& (_minY <= maxY);
+
+	return (inTop && inLeft && inBottom && inRight);
+};
+
+function intersects(bbox1, bbox2) {
+	var minX = bbox1[0], minY = bbox1[1], maxX = bbox1[2], maxY = bbox1[3];
+    var _minX = bbox2[0], _minY = bbox2[1], _maxX = bbox2[2], _maxY = bbox2[3];
+
+	var inBottom = (_minY == minY && _maxY == maxY) ? true
+			: (((_minY > minY) && (_minY < maxY)) || ((minY > _minY) && (minY < _maxY)));
+	var inTop = (_minY == minY && _maxY == maxY) ? true
+			: (((_maxY > minY) && (_maxY < maxY)) || ((maxY > _minY) && (maxY < _maxY)));
+	var inRight = (_maxX == maxX && _minX == minX) ? true
+			: (((_maxX > minX) && (_maxX < maxX)) || ((maxX > _minX) && (maxX < _maxX)));
+	var inLeft = (_maxX == maxX && _minX == minX) ? true
+			: (((_minX > minX) && (_minX < maxX)) || ((minX > _minX) && (minX < _maxX)));
+
+	return (contains(bbox1, bbox2)) || ((inTop || inBottom) && (inLeft || inRight));
+};
