@@ -10,6 +10,8 @@ var mapCenter = {
     y: 40.781841
 };
 
+var pxs = {};
+
 var zoomLevel = 12;
 var thematicAttribute = 'lot';
 var thematicLevels = 7;
@@ -74,7 +76,8 @@ $(document).ready(function() {
     // $.getJSON(dataUrl, function(data) {
         // dataset = data;
         var canvas = $('#map');
-        canvas.attr({ width: canvas.width(), height: canvas.height() })
+        canvas.attr({ width: canvas.width(), height: canvas.height() });
+        buffer = canvas.clone();
 
         mapWidth = canvas.width();
         mapHeight = canvas.height();
@@ -85,6 +88,7 @@ $(document).ready(function() {
         };
 
         var ctx = canvas[0].getContext('2d');
+        bufferCtx = buffer[0].getContext('2d');
         mapCenter = degrees2meters(mapCenter.x, mapCenter.y);
 
         $('.zoom_in').on('click', function(e) {
@@ -199,18 +203,11 @@ function draw(ctx, mapCenter) {
     // console.log(maxX);
     // console.log(minY);
     // console.log(maxY);
-
-    // ctx.fillStyle = "rgb(200,0,0)";
     var totalPixels = 0, tt = 0;
+   	var t1 = new Date().getTime();
     for (var i = 0, l = dataset.features.length; i < l; i++) {
-    	console.log(i);
+    	// console.log(i);
         feature = dataset.features[i];
-
-        //       ctx.beginPath();
-        // ctx.moveTo(10,50);
-        // ctx.lineTo(100,75);
-        // ctx.lineTo(100,25);
-        // ctx.fill();
 
         var colorIndex = feature.properties[thematicAttribute] / thematicOffset + 1;
         var color = colorRamp[Math.floor(colorIndex)];
@@ -231,6 +228,17 @@ function draw(ctx, mapCenter) {
                     y: coord.y
                 }, minX, maxY);
 
+                // if (pxs[pixel.x]) {
+                // 	if (pxs[pixel.x][pixel.y] > 3) {
+                // 		continue;
+                // 	}
+                // } else {
+                // 	pxs[pixel.x] = {};
+                // 	pxs[pixel.x][pixel.y] = 0;
+                // }
+
+                // pxs[pixel.x][pixel.y] = pxs[pixel.x][pixel.y] + 1;
+
                 totalPixels++;
 
                 if (!lastPixel) {
@@ -246,23 +254,30 @@ function draw(ctx, mapCenter) {
 
                 // console.log(pixel.x + ',' + pixel.y);
 
-                if (k == 0) {
+                if (!k) {
                     ctx.moveTo(pixel.x, pixel.y);
                 } else {
                     ctx.lineTo(pixel.x, pixel.y);
                 }
 
                 if (k == lll - 1) {
-                    ctx.fill();
+                    ctx.fill('evenodd');
                 }
             }
         }
     }
+
+    console.log('rendering ' + (new Date().getTime() - t1));
+
+    t1 = new Date().getTime();
+    // ctx.putImageData(bufferCtx.getImageData(0,0,mapWidth,mapHeight), 0, 0);
+	console.log('canvas ' + (new Date().getTime() - t1));
 
     console.log(totalPixels);
     console.log(tt);
 };
 
 function empty(ctx) {
+	pxs = {};
     ctx.clearRect(0, 0, mapWidth, mapHeight);
 }
