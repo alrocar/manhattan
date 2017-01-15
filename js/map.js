@@ -17,17 +17,22 @@ function map(mapId, options) {
     this.cv = canvas[0];
     this.canvas = canvas;
 
-    canvas.attr({ width: canvas.width(), height: canvas.height() });
+    var doc = $(document);
+    var screenW = doc.width();
+    var screenH = doc.height();
+    canvas.attr({ width: screenW, height: screenH });
 
     this.ctx = canvas[0].getContext('2d');
     this.ctx.strokeStyle = "#0000ff";
     this.ctx.lineWidth   = 1;
 
     if (this.ratio > 1) {
-        this.cv.style.width = this.cv.width + 'px';
-        this.cv.style.height = this.cv.height + 'px';
-        this.cv.width *= this.ratio;
-        this.cv.height *= this.ratio;
+        
+
+        this.cv.style.width = screenW + 'px';
+        this.cv.style.height = screenH + 'px';
+        this.cv.width = screenW * this.ratio;
+        this.cv.height = screenH * this.ratio;
         this.ctx.scale(this.ratio, this.ratio);
     }
 
