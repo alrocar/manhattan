@@ -1,3 +1,7 @@
+'use strict';
+
+//require projection.js
+
 function map(mapId, options) {
     this.layers = [];
     this.controls = [];
@@ -42,6 +46,9 @@ function map(mapId, options) {
 
     this.tilesWidth = Math.ceil(this.mapWidth / TILE_SIZE) + 1;
     this.tilesHeight = Math.ceil(this.mapHeight / TILE_SIZE) + 1;
+
+    this.ctx.fillStyle = '#000000';
+    this.ctx.fillText('Wait while loading data...', 10, 10);
 };
 
 map.prototype.getViewportBounds = function() {

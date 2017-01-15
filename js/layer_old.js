@@ -1,6 +1,4 @@
 map.prototype.draw = function(ctx, mapCenter) {
-    this.draw2(ctx, mapCenter);
-    return;
     empty();
 
     var feature;
@@ -9,11 +7,7 @@ map.prototype.draw = function(ctx, mapCenter) {
     var maxX = (mapCenter.x + (mapWidth / 2 * currentResolution));
     var minY = (mapCenter.y - (mapHeight / 2 * currentResolution));
     var maxY = (mapCenter.y + (mapHeight / 2 * currentResolution));
-
-    // console.log(minX);
-    // console.log(maxX);
-    // console.log(minY);
-    // console.log(maxY);
+    
     var totalPixels = 0,
         tt = 0,
         totalFeatures = 0;

@@ -7,7 +7,7 @@ var featuresIndex = {};
 var tiles = {};
 
 var tiler = function(features, options) {
-	this.options = options;
+    this.options = options;
     this.preprocess(features);
     this.tiles = tiles;
 }
@@ -24,10 +24,17 @@ tiler.prototype.preprocess = function(features) {
         minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
         feature = features[i];
+
+        if (!this.isGeoJSON(feature)) {
+            feature = this.asGeoJSON(feature);
+            features[i] = feature;
+        }
+
         this.options.callback(feature);
 
         for (var j = 0, ll = feature.geometry.coordinates[0].length; j < ll; j++) {
             polygon = feature.geometry.coordinates[0][j];
+
             // feature.geometry.coordinates[0][j] = simplify(polygon, 3);
             for (var k = 0, lll = polygon.length; k < lll; k++) {
                 coord = polygon[k];
@@ -58,6 +65,25 @@ tiler.prototype.preprocess = function(features) {
 
     this.bbox = [datasetMinX, datasetMinY, datasetMaxX, datasetMaxY];
     this.generateTiles(features);
+};
+
+tiler.prototype.isGeoJSON = function(feature) {
+    return feature && feature.properties && feature.geometry;
+};
+
+tiler.prototype.asGeoJSON = function(feature) {
+    var f = new twkb.toGeoJSON(new Uint8Array(feature.the_geom)).features[0];
+    f.properties = {};
+
+    for (var attr in feature) {
+        if (attr != 'the_geom') {
+            f.properties[attr] = feature[attr];
+        } else {
+            f.geometry.coordinates = [f.geometry.coordinates];
+        }
+    }
+
+    return f;
 };
 
 tiler.prototype.generateTiles = function(features) {

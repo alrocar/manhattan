@@ -1,6 +1,9 @@
 'use strict';
+
 //require tiler.js
 //require thematic.js
+//require projection.js
+//require geometry.js
 
 var drawn = {};
 
@@ -25,7 +28,7 @@ layer.prototype.process = function(data) {
         throw new Error('Unable to load data');
     }
 
-    this.tileProcessor = new tiler(data.features, {
+    this.tileProcessor = new tiler(data.features || data.rows, {
         fromZoomLevel: 12,
         toZoomLevel: 16,
         callback: function(feature) {

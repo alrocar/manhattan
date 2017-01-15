@@ -1,8 +1,9 @@
 'use strict';
 
 var baseUrl = "https://rambo-test.carto.com/api/v2/";
-var query = "select the_geom, lot, cartodb_id from public.mnmappluto";
-var dataUrl = baseUrl + "sql?format=GeoJSON&q=" + query;
+var queryTWKB = "select ST_AsTWKB(the_geom) as the_geom, lot, cartodb_id from public.mnmappluto";
+var query = "select the_geom, lot, cartodb_id from public.mnmappluto&format=GeoJSON";
+var dataUrl = baseUrl + "sql?q=" + queryTWKB;
 
 $(document).ready(function() {
     var theMap = new map('#map', {
