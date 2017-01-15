@@ -52,8 +52,8 @@ pan.prototype.load = function(map) {
 
     var getPos = function(e) {
         return {
-            x: e.pageX || e.originalEvent.touches[0].pageX,
-            y: e.pageY || e.originalEvent.touches[0].pageY
+            x: e.pageX || e.originalEvent.touches.length && e.originalEvent.touches[0].pageX || e.originalEvent.changedTouches[0].pageX,
+            y: e.pageY || e.originalEvent.touches.length && e.originalEvent.touches[0].pageY || e.originalEvent.changedTouches[0].pageY
         };
     };
 
