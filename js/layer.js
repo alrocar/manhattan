@@ -4,6 +4,7 @@
 //require thematic.js
 //require projection.js
 //require geometry.js
+//require cache.js
 
 var drawn = {};
 
@@ -14,7 +15,7 @@ function layer(url, options) {
     this.style = new thematic(options.style);
 
     if (this.options.clearData) {
-        localStorage.clear();
+        clearCache();
     }
 };
 
@@ -22,16 +23,16 @@ layer.prototype.load = function(map, callback) {
     var self = this;
     this.map = map;
     
-    var data = localStorage.getItem('data');
+    var data = getItem('data');
     if (data) {
         self.process(JSON.parse(data));
         callback && callback();
         return;
     }
 
-    $.getJSON(dataUrl, function(data) {
+    $.getJSON(this.url, function(data) {
         if (self.options.cacheData) {
-            localStorage.setItem('data', JSON.stringify(data));
+            saveItem('data', JSON.stringify(data));
         }
 
         self.process(data);
@@ -162,12 +163,16 @@ layer.prototype.draw = function() {
                     }
 
                     this.ctx.fill();
+
+                    if (this.style.strokeAt <= this.map.zoomLevel) {
+                        this.ctx.stroke();    
+                    }
                 }
             }
 
             if (contains([0, 0, this.map.mapWidth, this.map.mapHeight], [tileOffsetX, tileOffsetY, tileOffsetX + TILE_SIZE, tileOffsetY + TILE_SIZE])) {
                 t.imageData = this.ctx.getImageData(tileOffsetX * this.map.ratio, tileOffsetY * this.map.ratio, TILE_SIZE * this.map.ratio, TILE_SIZE * this.map.ratio);
-                localStorage.setItem(this.map.zoomLevel + ',' + (tile.x + x) + ',' + (tile.y + y), t.imageData);
+                // saveItem(this.map.zoomLevel + ',' + (tile.x + x) + ',' + (tile.y + y), t.imageData);
             }
         }
     }

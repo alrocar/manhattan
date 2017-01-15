@@ -20,6 +20,8 @@ function map(mapId, options) {
     canvas.attr({ width: canvas.width(), height: canvas.height() });
 
     this.ctx = canvas[0].getContext('2d');
+    this.ctx.strokeStyle = "#0000ff";
+    this.ctx.lineWidth   = 1;
 
     if (this.ratio > 1) {
         this.cv.style.width = this.cv.width + 'px';

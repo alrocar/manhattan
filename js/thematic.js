@@ -10,6 +10,7 @@ function thematic(options) {
     this.attribute = options.attribute;
     this.levels = options.levels;
     this.colors = options.colors;
+    this.strokeAt = options.strokeAt;
 };
 
 thematic.prototype.visit = function(feature) {
