@@ -10,7 +10,7 @@ function map(mapId, options) {
     this.debug = options.debug;
     this.maxZoomLevel = options.maxZoomLevel || 16;
     this.minZoomLevel = options.minZoomLevel || 12;
-    this.ratio = devicePixelRatio;
+    this.ratio = options.ratio;
     this.resolutions = options.resolutions;
 
     var canvas = $(mapId);

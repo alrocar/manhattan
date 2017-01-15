@@ -9,7 +9,7 @@ $(document).ready(function() {
     var theMap = new map('#map', {
         zoomLevel: 12,
         debug: true,
-        ratio: devicePixelRatio,
+        ratio: 2,
         resolutions: resolutions
     });
 
@@ -18,7 +18,8 @@ $(document).ready(function() {
             attribute: 'lot',
             levels: 7,
             colors: ['#FFFFCC', '#C7E9B4', '#7FCDBB', '#41B6C4', '#1D91C0', '#225EA8', '#0C2C84']
-        }
+        },
+        cacheData: true
     }));
 
     theMap.addControl(new pan(map));

@@ -9,14 +9,31 @@ var drawn = {};
 
 function layer(url, options) {
     this.url = url;
+    this.options = options;
 
     this.style = new thematic(options.style);
+
+    if (this.options.clearData) {
+        localStorage.clear();
+    }
 };
 
 layer.prototype.load = function(map, callback) {
     var self = this;
     this.map = map;
+    
+    var data = localStorage.getItem('data');
+    if (data) {
+        self.process(JSON.parse(data));
+        callback && callback();
+        return;
+    }
+
     $.getJSON(dataUrl, function(data) {
+        if (self.options.cacheData) {
+            localStorage.setItem('data', JSON.stringify(data));
+        }
+
         self.process(data);
         callback && callback();
     });
@@ -63,7 +80,7 @@ layer.prototype.draw = function() {
 
     this.ctx = this.map.ctx;
 
-    if (map.debug) {
+    if (this.map.debug) {
         console.time('draw');
         this.ctx.beginPath();
         this.ctx.rect(0, 0, this.map.mapWidth, this.map.mapHeight);
