@@ -50,24 +50,37 @@ pan.prototype.load = function(map) {
         map.draw();
     };
 
-    canvas.on("mousedown", function(e) {
+    var getPos = function(e) {
+        return {
+            x: e.pageX || e.originalEvent.touches[0].pageX,
+            y: e.pageY || e.originalEvent.touches[0].pageY
+        };
+    };
+
+    canvas.on("mousedown touchstart", function(e) {
+        var pos = getPos(e);
+        
         panOrigin = {
-            x: e.pageX * ratio,
-            y: e.pageY * ratio
+            x: pos.x * ratio,
+            y: pos.y * ratio
         };
 
         lastPanPosition = {
-            x: e.pageX * ratio,
-            y: e.pageY * ratio
+            x: pos.x * ratio,
+            y: pos.y * ratio
         };
 
-        canvas.on("mousemove", function(e) {
-            onMove(e.pageX, e.pageY);
-        });
-    }).on("mouseup", function(e) {
-        canvas.off("mousemove");
+        canvas.on("mousemove touchmove", function(e) {
+            var pos = getPos(e);
 
-        onMove(e.pageX, e.pageY);
+            onMove(pos.x, pos.y);
+        });
+    }).on("mouseup touchend", function(e) {
+        canvas.off("mousemove touchmove");
+
+        var pos = getPos(e);
+
+        onMove(pos.x, pos.y);
 
         recenter();
     });
