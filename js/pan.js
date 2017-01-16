@@ -58,6 +58,7 @@ pan.prototype.load = function(map) {
     };
 
     canvas.on("mousedown touchstart", function(e) {
+        e.preventDefault();
         var pos = getPos(e);
         
         panOrigin = {
@@ -71,11 +72,13 @@ pan.prototype.load = function(map) {
         };
 
         canvas.on("mousemove touchmove", function(e) {
+            e.preventDefault();
             var pos = getPos(e);
 
             onMove(pos.x, pos.y);
         });
     }).on("mouseup touchend", function(e) {
+        e.preventDefault();
         canvas.off("mousemove touchmove");
 
         var pos = getPos(e);
