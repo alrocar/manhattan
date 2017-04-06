@@ -15,7 +15,7 @@ $(document).ready(function() {
         resolutions: resolutions
     });
 
-    theMap.addLayer(new layer(dataUrlTWKB, {
+    theMap.addLayer(new layer(dataUrl, {
         style: {
             attribute: 'lot',
             levels: 7,
